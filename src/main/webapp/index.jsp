@@ -1,196 +1,410 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<html>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<!DOCTYPE html>
+<html lang="zh-CN">
 <head>
-  <title>银行系统首页</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="description" content="项目管理系统首页">
+  <title>项目管理系统</title>
   <style>
+    /* ========== CSS 变量定义 ========== */
+    :root {
+      /* 基础色彩 */
+      --color-primary: #3b82f6;
+      --color-primary-hover: #2563eb;
+      --color-primary-active: #1d4ed8;
+      --color-success: #10b981;
+      --color-danger: #ef4444;
+      --color-warning: #f59e0b;
+
+      /* 中性色 */
+      --color-bg: #f8fafc;
+      --color-panel: #ffffff;
+      --color-text: #1e293b;
+      --color-text-muted: #64748b;
+      --color-border: #e2e8f0;
+      --color-border-hover: #cbd5e1;
+      --color-border-active: #94a3b8;
+
+      /* 按钮色彩 */
+      --color-btn-bg: #f1f5f9;
+      --color-btn-bg-hover: #e2e8f0;
+      --color-btn-bg-active: #cbd5e1;
+      --color-btn-text: #334155;
+
+      /* 阴影与透明度 */
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      --backdrop-blur: 6px;
+
+      /* 边框圆角 */
+      --radius-sm: 0.25rem;
+      --radius-md: 0.375rem;
+      --radius-lg: 0.5rem;
+      --radius-full: 9999px;
+    }
+
+    /* ========== 基础样式 ========== */
     * {
+      box-sizing: border-box;
       margin: 0;
       padding: 0;
-      box-sizing: border-box;
+    }
+
+    html {
+      height: 100%;
+      scroll-behavior: smooth;
     }
 
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #fff9e6 0%, #ffeeba 100%);
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-    }
-
-    .container {
-      background-color: #fff;
-      padding: 40px;
-      border-radius: 15px;
-      box-shadow: 0 10px 30px rgba(255, 204, 0, 0.2);
-      width: 100%;
-      max-width: 600px;
-      text-align: center;
-      border: 1px solid #ffeb99;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .container::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 5px;
-      background: linear-gradient(90deg, #ffd700, #ffa500, #ffd700);
-    }
-
-    h2 {
-      color: #b8860b;
-      margin-bottom: 20px;
-      font-size: 28px;
-      font-weight: 600;
-      text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
-    }
-
-    .welcome-text {
-      color: #666;
-      margin-bottom: 30px;
-      font-size: 16px;
+      min-height: 100%;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+      "PingFang SC", "Microsoft YaHei", "Noto Sans", sans-serif;
+      color: var(--color-text);
+      background: linear-gradient(135deg, var(--color-bg) 0%, #f1f5f9 100%);
       line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
 
-    .button-group {
+    /* ========== 布局容器 ========== */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+    }
+
+    /* ========== 排版样式 ========== */
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      line-height: 2rem;
+      margin-bottom: 0.75rem;
+      color: var(--color-text);
       display: flex;
-      flex-direction: column;
-      gap: 15px;
-      margin-bottom: 30px;
+      align-items: center;
+      gap: 0.75rem;
     }
 
-    a {
-      display: block;
-      padding: 15px 20px;
-      text-decoration: none;
-      border-radius: 8px;
-      font-weight: 600;
-      font-size: 16px;
-      transition: all 0.3s ease;
-      position: relative;
-      overflow: hidden;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    .subtitle {
+      font-size: 0.875rem;
+      color: var(--color-text-muted);
+      margin-bottom: 1.5rem;
     }
 
-    a::after {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-      transition: left 0.5s;
+    /* ========== 面板卡片 ========== */
+    .panel {
+      background: var(--color-panel);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: 1.75rem;
+      box-shadow: var(--shadow-sm);
+      transition: box-shadow 0.2s ease, transform 0.2s ease;
     }
 
-    a:hover::after {
-      left: 100%;
-    }
-
-    a:hover {
+    .panel:hover {
+      box-shadow: var(--shadow-md);
       transform: translateY(-2px);
     }
 
-    .create-account {
-      background: linear-gradient(to right, #ffd700, #ffa500);
-      color: #6b4d00;
-      border: 1px solid #ffc107;
-    }
-    .create-account:hover {
-      box-shadow: 0 6px 12px rgba(255, 165, 0, 0.3);
-    }
-
-    .account-info {
-      background: linear-gradient(to right, #ffed4e, #ffdb4d);
-      color: #6b4d00;
-      border: 1px solid #ffd700;
-    }
-    .account-info:hover {
-      box-shadow: 0 6px 12px rgba(255, 219, 77, 0.3);
-    }
-
-    .transaction {
-      background: linear-gradient(to right, #ffc107, #ff9800);
-      color: #6b4d00;
-      border: 1px solid #ffa000;
-    }
-    .transaction:hover {
-      box-shadow: 0 6px 12px rgba(255, 152, 0, 0.3);
+    /* ========== 按钮样式 ========== */
+    .btn {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.5rem 1rem;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      background-color: var(--color-btn-bg);
+      color: var(--color-btn-text);
+      font-size: 0.875rem;
+      font-weight: 500;
+      line-height: 1.5;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      user-select: none;
+      min-width: 8rem;
+      height: 2.5rem;
+      text-decoration: none;
+      overflow: hidden;
     }
 
-    /* --- 新增的样式 --- */
-    .show-users {
-      background: linear-gradient(to right, #d3d3d3, #a9a9a9);
-      color: #333;
-      border: 1px solid #b0b0b0;
+    .btn:hover {
+      background-color: var(--color-btn-bg-hover);
+      border-color: var(--color-border-hover);
+      transform: translateY(-1px);
     }
-    .show-users:hover {
-      box-shadow: 0 6px 12px rgba(169, 169, 169, 0.3);
-    }
-    /* --- 新增样式结束 --- */
 
-    .logout {
-      background: linear-gradient(to right, #ff6b00, #ff4500);
+    .btn:active {
+      background-color: var(--color-btn-bg-active);
+      border-color: var(--color-border-active);
+      transform: translateY(0);
+    }
+
+    .btn:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-primary {
+      background-color: var(--color-primary);
+      border-color: var(--color-primary);
       color: white;
-      border: 1px solid #ff4500;
-    }
-    .logout:hover {
-      box-shadow: 0 6px 12px rgba(255, 69, 0, 0.3);
     }
 
-    .copyright {
-      margin-top: 30px;
-      padding-top: 15px;
-      border-top: 1px dashed #ffd700;
-      color: #b8860b;
-      font-size: 14px;
+    .btn-primary:hover {
+      background-color: var(--color-primary-hover);
+      border-color: var(--color-primary-hover);
+    }
+
+    .btn-primary:active {
+      background-color: var(--color-primary-active);
+      border-color: var(--color-primary-active);
+    }
+
+    /* ========== 按钮组 ========== */
+    .btn-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .btn-wrap {
+      display: inline-flex;
+    }
+
+    .btn-wrap a {
+      text-decoration: none;
+      width: 100%;
+    }
+
+    /* ========== 用户信息栏 ========== */
+    .user-info {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--color-border);
+    }
+
+    .user-details {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.875rem;
+    }
+
+    .user-name {
+      font-weight: 600;
+      color: var(--color-text);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: var(--radius-full);
+      font-size: 0.75rem;
+      font-weight: 500;
+      background-color: var(--color-primary);
+      color: white;
+      line-height: 1;
+    }
+
+    /* ========== 提示消息 ========== */
+    .alert {
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+      border-radius: var(--radius-md);
+      background-color: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #991b1b;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .alert::before {
+      content: "⚠️";
+      font-size: 1.25rem;
+    }
+
+    /* ========== 响应式设计 ========== */
+    @media (max-width: 768px) {
+      .container {
+        padding: 1.5rem 1rem;
+      }
+
+      h1 {
+        font-size: 1.5rem;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+      }
+
+      .btn-group {
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+        min-width: auto;
+      }
+
+      .user-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+      }
     }
 
     @media (max-width: 480px) {
-      .container {
-        padding: 25px 20px;
+      .panel {
+        padding: 1.25rem;
       }
-      h2 {
-        font-size: 24px;
+
+      .btn {
+        height: 2.25rem;
+        font-size: 0.8125rem;
       }
-      a {
-        padding: 12px 15px;
-        font-size: 15px;
+    }
+
+    /* ========== 动画效果 ========== */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .fade-in {
+      animation: fadeIn 0.3s ease-out forwards;
+    }
+
+    /* ========== 可访问性 ========== */
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --color-bg: #0f172a;
+        --color-panel: #1e293b;
+        --color-text: #f8fafc;
+        --color-text-muted: #94a3b8;
+        --color-border: #334155;
+        --color-border-hover: #475569;
+        --color-border-active: #64748b;
+        --color-btn-bg: #334155;
+        --color-btn-bg-hover: #475569;
+        --color-btn-bg-active: #64748b;
+        --color-btn-text: #f8fafc;
+      }
+
+      .alert {
+        background-color: #1f2937;
+        border-color: #374151;
+        color: #fecaca;
       }
     }
   </style>
 </head>
 <body>
-
 <div class="container">
+  <h1>
+    项目管理系统
+    <span class="subtitle">欢迎使用我们的服务平台</span>
+  </h1>
+
   <%
-    String username = (String) session.getAttribute("username");
-    if (username == null) {
-      response.sendRedirect("login.jsp");
-      return;
-    }
+    // 会话状态检查
+    boolean loggedIn = (session != null) &&
+            (session.getAttribute("loginUser") != null || session.getAttribute("username") != null);
+    Boolean adminFlag = (session == null) ? null : (Boolean) session.getAttribute("isAdmin");
+    boolean isAdmin = adminFlag != null && adminFlag;
+    String ctx = request.getContextPath();
   %>
 
-  <h2>欢迎您, <%= username %>!</h2>
-  <p class="welcome-text">请选择您要进行的操作，我们将为您提供安全、便捷的银行服务</p>
+  <%-- 显示系统消息 --%>
+  <%
+    String msg = (String) request.getAttribute("msg");
+    if (msg != null && !msg.isEmpty()) {
+  %>
+  <div class="alert fade-in"><%= msg %></div>
+  <% } %>
 
-  <div class="button-group">
-    <a href="createAccount" class="create-account">开通银行账户</a>
-    <a href="showAccount" class="account-info">查询我的账户信息</a>
-    <a href="transaction.jsp" class="transaction">办理存款/取款</a>
-    <a href="showUsers" class="show-users">查询所有用户</a>
-    <a href="logout" class="logout">退出登录</a>
-  </div>
+  <div class="panel fade-in">
+    <div class="btn-group">
+      <%-- 普通用户功能 --%>
+      <div class="btn-wrap">
+        <a href="<%= ctx %>/showAccount">
+          <button class="btn" type="button">我的账户</button>
+        </a>
+      </div>
 
-  <div class="copyright">
-    版权所有 © 计科6班 魏语石 23111141
+      <div class="btn-wrap">
+        <a href="<%= ctx %>/transaction.jsp">
+          <button class="btn" type="button">存取款操作</button>
+        </a>
+      </div>
+
+      <div class="btn-wrap">
+        <a href="<%= ctx %>/easterEgg.jsp">
+          <button class="btn" type="button">彩蛋</button>
+        </a>
+      </div>
+
+      <%-- 管理员专属功能 --%>
+      <% if (isAdmin) { %>
+      <div class="btn-wrap">
+        <a href="<%= ctx %>/showUsers">
+          <button class="btn btn-primary" type="button">用户管理</button>
+        </a>
+      </div>
+      <% } %>
+    </div>
+
+    <%-- 用户状态栏 --%>
+    <div class="user-info">
+      <% if (loggedIn) { %>
+      <div class="user-details">
+        <span class="muted">当前用户:</span>
+        <span class="user-name"><%= (String)session.getAttribute("username") %></span>
+        <% if (isAdmin) { %>
+        <span class="badge">管理员</span>
+        <% } %>
+      </div>
+      <div class="btn-wrap">
+        <a href="<%= ctx %>/logout">
+          <button class="btn" type="button">退出登录</button>
+        </a>
+      </div>
+      <% } else { %>
+      <div class="btn-wrap">
+        <a href="<%= ctx %>/login.jsp">
+          <button class="btn" type="button">登录</button>
+        </a>
+      </div>
+      <div class="btn-wrap">
+        <a href="<%= ctx %>/regist.jsp">
+          <button class="btn btn-primary" type="button">注册</button>
+        </a>
+      </div>
+      <% } %>
+    </div>
   </div>
 </div>
-
 </body>
 </html>

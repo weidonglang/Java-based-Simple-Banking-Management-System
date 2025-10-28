@@ -92,13 +92,14 @@ public class AdminAuthFilter implements Filter {
 **web.xml mapping example（XML 示例）**
 
 ```xml
+
 <filter>
-  <filter-name>AdminAuthFilter</filter-name>
-  <filter-class>com.tianshi.web.filter.AdminAuthFilter</filter-class>
+    <filter-name>AdminAuthFilter</filter-name>
+    <filter-class>filter.com.web.AdminAuthFiltercom.web.filter.AdminAuthFilter</filter-class>
 </filter>
 <filter-mapping>
-  <filter-name>AdminAuthFilter</filter-name>
-  <url-pattern>/showUsers</url-pattern>
+<filter-name>AdminAuthFilter</filter-name>
+<url-pattern>/showUsers</url-pattern>
 </filter-mapping>
 ```
 
