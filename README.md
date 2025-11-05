@@ -1,35 +1,52 @@
+
 # Lab2 – Banking Demo (JSP/Servlet)
 
 *(中文 / English Bilingual README)*
 
-A minimal banking-style web app built with **JSP + Servlet + JDBC** running on **Tomcat 8**. It supports user registration & login, account creation, deposit/withdraw, viewing own account, and an **admin-only “list all users”** feature enforced by a Servlet **Filter**.
+A minimal banking-style web app built with **JSP + Servlet + JDBC** on **Tomcat 8**. It supports user registration & login, account creation, deposit/withdraw, viewing own account, an **admin-only “list all users”** (via Filter), plus a **JSTL/EL demo: product list** page.
 
-一个基于 **JSP + Servlet + JDBC**（Tomcat 8）的极简银行示例应用，包含注册登录、开通账户、存取款、查询我的账户，以及通过 **Servlet 过滤器** 强制限制的 **管理员专享“查询所有用户信息”** 功能。
+一个基于 **JSP + Servlet + JDBC**（Tomcat 8）的极简银行示例应用：注册/登录、开通账户、存取款、查询我的账户、**管理员专享“查询所有用户信息”**（Filter 拦截），并新增 **JSTL/EL 产品列表** 示例页面。
+
+---
+
+## ✅ What’s New | 本次更新
+
+* `showUsers.jsp` 改造为 **JSTL + EL** 遍历显示用户集合（替代脚本片段）。
+* 新增 **产品列表**功能（纯模拟数据，演示 JSTL/EL）：
+
+  * `com.tianshi.entity.Product` 实体
+  * `com.tianshi.servlet.ShowProductsServlet`（`/showProducts`）
+  * `showProducts.jsp`（卡片式展示，含折扣价、库存、评分星星）
+* UI 轻量美化：统一按钮样式、卡片悬浮、返回上一级按钮。
+* 静态资源路径规范：图片置于 `src/main/webapp/imgs/`，JSP 使用 `<c:url>` 自动拼接 Context Path。
 
 ---
 
 ## ✨ Features | 功能特性
 
-* User auth: register & login（注册/登录）
-* One account per user: create account（每人一个账户，开通账户）
-* Deposit / withdraw with transaction handling（存取款，带事务）
+* Register & Login（注册/登录）
+* Create one account per user（每人一个账户）
+* Deposit / Withdraw with transaction handling（存取款，含事务）
 * Show **my** account balance（查询我的账户）
-* **Admin-only**: show **all** users (protected by `AdminAuthFilter`)（仅管理员：查询所有用户，受 `AdminAuthFilter` 保护）
-* Session keys used: `loginUser`, `userId`, `username`, `isAdmin`（会话键）
+* **Admin-only**: show **all** users（仅管理员查看所有用户，`AdminAuthFilter` 保护）
+* **JSTL/EL** demos:
 
-> The admin is recognized when `session.isAdmin == true`. In the current setup, logging in as username `admin` sets `isAdmin=true`. You can later switch to DB-backed roles. Filters intercept and process requests/responses as specified by the Servlet standard. ([Oracle][1])
+  * `showUsers.jsp`：`<c:forEach>` + `${u.id}` / `${u.username}`
+  * `showProducts.jsp`：列表卡片、折扣计算、库存分档、评分星星、图片 `<c:url>`
+
+Session keys：`loginUser`, `userId`, `username`, `isAdmin`
 
 ---
 
 ## 🧱 Tech Stack | 技术栈
 
-* **Java 8**, **Servlet/JSP**, **JSTL 1.2+**（核心标签库）
+* **Java 8**, **Servlet/JSP**, **JSTL 1.2+**
 * **Tomcat 8.0.x**
-* **JDBC**（数据库连接由 `JDBCUtil` 配置）
-* Frontend: JSP + minimal CSS
+* **JDBC**（`JDBCUtil`）
+* JSP + 少量 CSS（按钮与卡片 UI）
 
-> JSTL core taglib URI in your JSPs:
-> `<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>` ([docs.oracle.com][2])
+> 引用 JSTL Core：
+> `<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>`
 
 ---
 
@@ -37,12 +54,12 @@ A minimal banking-style web app built with **JSP + Servlet + JDBC** running on *
 
 ```
 src/main/java/
-  com/tianshi/web/entity/         # User, Account
-  com/tianshi/web/dao/            # UserDao, AccountDao (+ impl)
-  com/tianshi/web/service/        # UserService, AccountService (+ impl)
-  com/tianshi/web/servlet/        # LoginServlet, CreateAccountServlet, ...
-  com/tianshi/web/filter/         # AdminAuthFilter (管理员过滤器)
-  com/tianshi/web/util/           # JDBCUtil
+  com/tianshi/entity/         # User, Account, Product   ← NEW
+  com/tianshi/dao/            # UserDao, AccountDao (+impl)
+  com/tianshi/service/        # UserService, AccountService (+impl)
+  com/tianshi/servlet/        # LoginServlet, CreateAccountServlet, ShowProductsServlet ← NEW
+  com/tianshi/filter/         # AdminAuthFilter
+  com/tianshi/util/           # JDBCUtil
 
 src/main/webapp/
   index.jsp
@@ -51,111 +68,102 @@ src/main/webapp/
   transaction.jsp
   showAccount.jsp
   accountResult.jsp
-  easterEgg.jsp
-  WEB-INF/web.xml  (如使用 XML 注册过滤器/Servlet)
+  showUsers.jsp               ← JSTL/EL 改造版
+  showProducts.jsp            ← NEW（含“返回上一级”按钮）
+  imgs/                       ← xiaomi.png / gree.png / huawei.png
+  WEB-INF/web.xml
 ```
 
----
-
-## 🔐 Admin Guard with Servlet Filter | 管理员过滤器
-
-**Goal**: Only admin can access `GET /showUsers`.
-
-**Approach**: Add `AdminAuthFilter` and map it to `/showUsers`. In login success, set `session.isAdmin = (username.equalsIgnoreCase("admin"))`. Filters can be declared via `@WebFilter(urlPatterns=...)` or in `web.xml` with `<filter>` + `<filter-mapping>`. ([jakarta.ee][3])
-
-**Why Filter?** Filters sit in the chain before servlets/JSPs to pre/post-process requests/responses in a reusable way (e.g., auth). ([Oracle][1])
-
-**Annotation mapping example（注解示例）**
-
-```java
-@WebFilter(urlPatterns = {"/showUsers"})
-public class AdminAuthFilter implements Filter {
-  public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain)
-      throws IOException, ServletException {
-    HttpServletRequest r = (HttpServletRequest) req;
-    HttpServletResponse p = (HttpServletResponse) resp;
-    HttpSession s = r.getSession(false);
-
-    Integer userId = (s==null)?null:(Integer) s.getAttribute("userId");
-    if (userId == null) { p.sendRedirect(r.getContextPath()+"/login.jsp"); return; }
-
-    boolean isAdmin = Boolean.TRUE.equals(s.getAttribute("isAdmin"));
-    if (!isAdmin) {
-      r.setAttribute("msg","权限不足：只有管理员可以访问“查询所有用户”。");
-      r.getRequestDispatcher("/index.jsp").forward(r,p); return;
-    }
-    chain.doFilter(req, resp);
-  }
-}
-```
-
-**web.xml mapping example（XML 示例）**
-
-```xml
-
-<filter>
-    <filter-name>AdminAuthFilter</filter-name>
-    <filter-class>filter.com.web.AdminAuthFiltercom.web.filter.AdminAuthFilter</filter-class>
-</filter>
-<filter-mapping>
-<filter-name>AdminAuthFilter</filter-name>
-<url-pattern>/showUsers</url-pattern>
-</filter-mapping>
-```
-
-> Note: Filters are invoked in the order they appear in the mapping list; URL patterns follow standard servlet matching rules. ([docs.oracle.com][4])
+> **静态资源**：放在 `src/main/webapp/imgs/`；JSP 中使用：
+>
+> ```jsp
+> <c:url value="/imgs/gree.png" var="imgUrl"/>
+> <img src="${imgUrl}" alt="...">
+> ```
+>
+> 这样会自动带上 Context Path，避免 404。
 
 ---
 
-## 👤 Auth & Session | 认证与会话
+## 🔐 Admin Guard via Filter | 管理员过滤器
 
-* On login success (`POST /login`), the app sets:
-
-  * `loginUser` (User object), `userId`, `username`
-  * `isAdmin` (currently true iff username is `admin`)
-* `index.jsp` shows “查询所有用户信息” button **only** if `sessionScope.isAdmin` is true (front-end guard). Real enforcement is the Filter (back-end guard).
+* 目标：仅管理员可访问 `GET /showUsers`。
+* 方式：`AdminAuthFilter` 映射到 `/showUsers`。登录成功后设置 `session.isAdmin`（当前用用户名 `admin` 触发；可扩展到 DB 角色）。
+* 可用注解 `@WebFilter(urlPatterns={"/showUsers"})` 或 `web.xml` 中 `<filter>` + `<filter-mapping>`。
 
 ---
 
-## 🔀 Transactions | 事务与并发（简述）
+## 🧪 Pages & Endpoints | 页面与端点
 
-* Service layer controls JDBC transactions (commit/rollback) for deposit/withdraw.
-* DAO offers `findByUserIdForUpdate(..., conn)` + `updateAccount(..., conn)` to cooperate within one transaction.
-* (Optional) For high concurrency, you can use a single atomic SQL for withdraw (e.g., `balance >= amount` guard) to avoid read-modify-write races.
-
----
-
-## 🧪 Pages & Endpoints | 页面与端点（简表）
-
-| Page / API             | Method   | Access         | Purpose                     |
-| ---------------------- | -------- | -------------- | --------------------------- |
-| `/login.jsp`, `/login` | GET/POST | Public         | Login（登录）                   |
-| `/regist.jsp`          | GET      | Public         | Register（注册）                |
-| `/index.jsp`           | GET      | Logged/All     | Home（首页）                    |
-| `/createAccount`       | POST     | Logged         | Create account（开通账户）        |
-| `/showAccount`         | GET      | Logged         | Show my account（查询我的账户）     |
-| `/transaction.jsp`     | GET      | Logged         | Deposit/Withdraw page（存取款页） |
-| `/showUsers`           | GET      | **Admin only** | List all users（查询所有用户）      |
-
-> If you add more endpoints later, map them similarly and extend the filter patterns (e.g., `/admin/*`). You can map multiple URL patterns to one filter. ([Stack Overflow][5])
+| Page / API             | Method   | Access     | Purpose                        |
+| ---------------------- | -------- | ---------- | ------------------------------ |
+| `/login.jsp`, `/login` | GET/POST | Public     | Login（登录）                      |
+| `/regist.jsp`          | GET      | Public     | Register（注册）                   |
+| `/index.jsp`           | GET      | All/Logged | Home（首页，含“查看产品列表”美化按钮）         |
+| `/createAccount`       | POST     | Logged     | Create account（开通账户）           |
+| `/showAccount`         | GET      | Logged     | Show my account（查询我的账户）        |
+| `/transaction.jsp`     | GET      | Logged     | Deposit/Withdraw page（存取款页）    |
+| `/showUsers`           | GET      | Admin only | List all users（JSTL/EL 渲染用户表格） |
+| `/showProducts`        | GET      | Public     | **Product list demo（JSTL/EL）** |
 
 ---
 
-## ⚙️ Configure DB | 数据库配置
+## 🧩 JSTL / EL Cheatsheet | 快速用法
 
-* Edit `JDBCUtil` to set your JDBC driver, URL, username/password.
-* Minimal schema (参考示例，可按你现有表调整)：
+* 遍历集合：
+
+  ```jsp
+  <c:forEach var="u" items="${users}">
+    ${u.id} - ${u.username}
+  </c:forEach>
+  ```
+* 条件与数值格式化：
+
+  ```jsp
+  <c:choose>
+    <c:when test="${p.discount > 0}">
+      <fmt:formatNumber value="${p.price * (1 - p.discount)}" maxFractionDigits="2"/>
+    </c:when>
+    <c:otherwise>${p.price}</c:otherwise>
+  </c:choose>
+  ```
+* 截断描述：
+
+  ```jsp
+  <c:choose>
+    <c:when test="${fn:length(p.description) > 50}">
+      ${fn:substring(p.description, 0, 50)}...
+    </c:when>
+    <c:otherwise>${p.description}</c:otherwise>
+  </c:choose>
+  ```
+* 图片 URL（自动加 Context Path）：
+
+  ```jsp
+  <c:url value="${p.image}" var="imgUrl"/><img src="${imgUrl}">
+  ```
+
+---
+
+## 🖼️ Product Images | 产品图片
+
+* 放置位置：`src/main/webapp/imgs/`
+* 示例文件：`xiaomi.png`、`gree.png`、`huawei.png`
+* **注意文件名一致性**：`ShowProductsServlet` 中第二条测试数据使用 `"/imgs/gree.png"`（不是 `geli.png`）。
+
+---
+
+## ⚙️ DB & Run | 数据库与运行
+
+* 在 `JDBCUtil` 中配置 JDBC URL/账号/密码。
+* 建库 / 建表（示例）：
 
   ```sql
-  -- user table
   CREATE TABLE user (
     id INT PRIMARY KEY AUTO_INCREMENT,
     username VARCHAR(64) UNIQUE NOT NULL,
     password VARCHAR(128) NOT NULL
-    -- optional: is_admin TINYINT(1) DEFAULT 0
   );
-
-  -- account table
   CREATE TABLE account (
     id INT PRIMARY KEY AUTO_INCREMENT,
     user_id INT UNIQUE NOT NULL,
@@ -163,57 +171,17 @@ public class AdminAuthFilter implements Filter {
     FOREIGN KEY (user_id) REFERENCES user(id)
   );
   ```
-* 在当前实现里，“管理员”由登录名是否为 `admin` 来判定；你也可以在 `user` 表新增 `is_admin/role` 字段，并在登录成功后把它写入 `session.isAdmin`。
+* 运行：IDE 配好 Tomcat（8.0.x），添加 Artifact，启动；或打包 WAR 放入 `tomcat/webapps/`。
 
 ---
 
-## 🚀 Run & Deploy | 运行与部署
+## 🎨 UI Notes | 界面说明
 
-### Local run in IDE | IDE 本地运行
-
-1. Install **JDK 8** & **Tomcat 8.0.x**.
-2. Import the project into IntelliJ IDEA / Eclipse as a **Web** app.
-3. Configure Tomcat server in IDE, set project’s context path, add artifact, run.
-
-### Build & deploy WAR | 打包 WAR 并部署
-
-* Package the app as a `.war` and drop it under Tomcat’s `webapps/`. With **autoDeploy** enabled, Tomcat will hot-deploy it. You can also use the Manager App or `curl`-based deployment. ([Apache Tomcat][6])
+* 全站统一按钮样式（首页“查看产品列表”按钮与产品页按钮同款）。
+* `showProducts.jsp` 顶部提供 **“← 返回上一级”** 按钮，返回首页。
+* 卡片悬浮、圆角、轻阴影与 `object-fit: contain` 确保图片等比缩放不变形。
 
 ---
 
-## 🧩 JSP Notes | JSP 小贴士
 
-* JSTL core taglib in JSP:
-  `<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>`
-  Ensure JSTL libraries are on the container’s classpath. ([docs.oracle.com][2])
-* Servlet basics & lifecycle: see Oracle/EE tutorials. ([docs.oracle.com][7])
-
----
-
-## 🛡️ Security Notes | 安全提示
-
-* Passwords should be stored hashed (e.g., BCrypt) instead of plain text.
-* Prefer `BigDecimal` for money to avoid floating precision errors.
-* Consider CSRF/Session fixation hardening if you extend features; Tomcat ships example filters and references. ([Apache Tomcat][8])
-
----
-
-## 🧭 Roadmap | 后续路线
-
-* [ ] Switch admin check to DB-backed role (`is_admin` column)
-* [ ] Replace double with `BigDecimal` in balances
-* [ ] Add `LogoutServlet` and session invalidation (if not already present)
-* [ ] Validation & i18n for forms
-* [ ] Unit/integration tests
-
----
-
-## 🤝 Contributing | 参与贡献
-
-Issues & PRs are welcome. Please format code consistently and keep DAO/Service/Servlet responsibilities separated.
-
----
-
-## 📜 License | 许可证
-
-Add your preferred license (e.g., MIT/Apache-2.0) at repository root as `LICENSE`.
+需要把 README 里某些字段（比如项目包名、Context Path、端口）替换成你实际的环境，告诉我具体值我可以帮你再细化一版。
