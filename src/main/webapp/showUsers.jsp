@@ -1,76 +1,49 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"
-         import="java.util.List, java.util.Map, java.text.SimpleDateFormat, java.util.Date" %>
-<%
-  // —— 探针：在响应头写入 “哪一份 JSP 在渲染 + 时间戳” ——
-  response.addHeader("X-JSP", "showUsers.jsp@" + new SimpleDateFormat("HH:mm:ss.SSS").format(new Date()));
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
-  // 取出 request 里的数据（来自 ShowUsersServlet）
-  Object obj = request.getAttribute("users");
-  List<Map<String,Object>> users = null;
-  if (obj instanceof List) {
-    users = (List<Map<String,Object>>) obj;
-  }
-  int count = (users == null) ? 0 : users.size();
-%>
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <title>所有用户信息</title>
+  <title>所有用户</title>
   <style>
-    body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans","PingFang SC","Microsoft YaHei",sans-serif;}
-    .toolbar{max-width:900px;margin:16px auto;display:flex;justify-content:space-between;align-items:center}
-    .btn{padding:6px 12px;border:1px solid #ddd;border-radius:6px;background:#f7f7f7;text-decoration:none;color:#333}
-    .btn:hover{background:#eee}
-    table{border-collapse:collapse;width:100%;max-width:900px;margin:0 auto}
-    th,td{border:1px solid #ddd;padding:8px 10px;text-align:left}
-    th{background:#f7f7f7}
-    .muted{color:#666;max-width:900px;margin:12px auto}
+    body{font-family:system-ui,Segoe UI,Arial; margin:24px;}
+    table{border-collapse:collapse; width:100%;}
+    th,td{border:1px solid #ddd; padding:10px; text-align:left;}
+    th{background:#f6f6f6;}
+    .empty{color:#888}
   </style>
 </head>
 <body>
+<h2>所有用户</h2>
 
-<div class="toolbar">
-  <h2>系统内所有用户信息</h2>
-  <a class="btn" href="<%= request.getContextPath() %>/index.jsp">返回首页</a>
-</div>
+<c:choose>
+  <c:when test="${not empty users}">
+    <table>
+      <thead>
+      <tr>
+        <th>ID</th>
+        <th>用户名</th>
+      </tr>
+      </thead>
+      <tbody>
+      <c:forEach var="u" items="${users}">
+        <tr>
+          <!-- 支持 JavaBean 或 Map 取值：${u.id} / ${u['id']} 都可 -->
+          <td>${u.id}</td>
+          <td>${u.username}</td>
+        </tr>
+      </c:forEach>
+      </tbody>
+    </table>
+  </c:when>
+  <c:otherwise>
+    <p class="empty">暂无用户数据。</p>
+  </c:otherwise>
+</c:choose>
 
-<p class="muted" style="max-width:900px;margin:8px auto;">
-  当前渲染的 users.size = <strong><%= count %></strong>
+<p style="margin-top:16px;">
+  <a href="${pageContext.request.contextPath}/index.jsp">返回首页</a>
 </p>
-
-<%
-  if (count == 0) {
-%>
-<p class="muted" style="max-width:900px;margin:0 auto;">暂无用户数据。</p>
-<%
-} else {
-%>
-<table>
-  <thead>
-  <tr>
-    <th>用户ID</th>
-    <th>用户名</th>
-  </tr>
-  </thead>
-  <tbody>
-  <%
-    for (Map<String, Object> row : users) {
-      Object id = row.get("id");
-      Object username = row.get("username");
-  %>
-  <tr>
-    <td><%= id %></td>
-    <td><%= username %></td>
-  </tr>
-  <%
-    }
-  %>
-  </tbody>
-</table>
-<%
-  }
-%>
-
 </body>
 </html>

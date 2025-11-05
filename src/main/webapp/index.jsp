@@ -55,6 +55,13 @@
       height: 100%;
       scroll-behavior: smooth;
     }
+    .btn{
+      display:inline-flex; align-items:center; gap:6px;
+      padding:10px 16px; border-radius:999px; text-decoration:none; font-weight:700;
+      border:1px solid transparent; transition:transform .15s ease, box-shadow .15s ease, background-color .2s ease;
+      color:#fff; background:var(--primary);
+    }
+    .btn:hover{ transform:translateY(-1px); box-shadow:0 10px 24px rgba(45,108,223,.25); background:var(--primary-600);}
 
     body {
       min-height: 100%;
@@ -352,6 +359,9 @@
         <a href="<%= ctx %>/showAccount">
           <button class="btn" type="button">我的账户</button>
         </a>
+        <a class="btn" href="${pageContext.request.contextPath}/showProducts">🛒 查看产品列表</a>
+
+
       </div>
 
       <div class="btn-wrap">
