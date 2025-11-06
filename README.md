@@ -181,7 +181,4 @@ src/main/webapp/
 * `showProducts.jsp` 顶部提供 **“← 返回上一级”** 按钮，返回首页。
 * 卡片悬浮、圆角、轻阴影与 `object-fit: contain` 确保图片等比缩放不变形。
 
----
 
-
-需要把 README 里某些字段（比如项目包名、Context Path、端口）替换成你实际的环境，告诉我具体值我可以帮你再细化一版。
