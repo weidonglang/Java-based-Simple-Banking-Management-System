@@ -44,7 +44,7 @@ Session keys：`loginUser`, `userId`, `username`, `isAdmin`
 * **JDBC**（`JDBCUtil`）
 * **MySQL**（InnoDB 外键）
 
-> `<c:url value="/path">` 会自动拼接 ContextPath 并处理 URL 重写；无需再手动加 `${ctx}`。([mail-archive.com][1])
+> `<c:url value="/path">` 会自动拼接 ContextPath 并处理 URL 重写；无需再手动加 `${ctx}`。
 
 ---
 
@@ -109,7 +109,7 @@ CREATE TABLE `account` (
 ```
 
 > 为什么删除用户会被拦住？
-> 当子表引用父表时，直接删父表会报 **ERROR 1451 (SQLSTATE 23000)**。我们采用**方案 B：不改外键**，在 Service 里**按依赖顺序手动删除**（`account` → `user`），一次事务提交。若未来改为库层级联，可把外键改成 `ON DELETE CASCADE`。([Bytebase][3])
+> 当子表引用父表时，直接删父表会报 **ERROR 1451 (SQLSTATE 23000)**。我们采用**方案 B：不改外键**，在 Service 里**按依赖顺序手动删除**（`account` → `user`），一次事务提交。若未来改为库层级联，可把外键改成 `ON DELETE CASCADE`。
 
 ---
 
@@ -140,32 +140,14 @@ CREATE TABLE `account` (
   <a href="${editUrl}">修改</a>
   ```
 
-  *不要*再手动拼 `${pageContext.request.contextPath}`，否则可能出现 `/context/context/...`。([mail-archive.com][1])
+  *不要*再手动拼 `${pageContext.request.contextPath}`，否则可能出现 `/context/context/...`。
 
-* **PRG 模式**：编辑提交后 `sendRedirect("/showUsers?msg=...")`，避免刷新重复提交。([geeksforgeeks.org][2])
+* **PRG 模式**：编辑提交后 `sendRedirect("/showUsers?msg=...")`，避免刷新重复提交。
 
 * **Servlet 映射**：
 
   * 默认使用 `@WebServlet("/deleteUserById")`；
-  * 若 `web.xml` 设置了 `metadata-complete="true"`，容器会**忽略注解**，需在 `web.xml` **显式 `<servlet-mapping>`**。([Stack Overflow][5])
+  * 若 `web.xml` 设置了 `metadata-complete="true"`，容器会**忽略注解**，需在 `web.xml` **显式 `<servlet-mapping>`**。
 
 * **手动事务级联删除（方案 B）**：
   在 `UserServiceImpl.deleteUserDeep(id)` 中：`setAutoCommit(false)` → `DELETE FROM account WHERE user_id=?` → `DELETE FROM user WHERE id=?` → `commit()`；异常 `rollback()`。
-
----
-
-## 🛠️ Troubleshooting | 常见问题
-
-* **点击链接 404，URL 里出现 `/app/app/...`**
-  → 你在 `<c:url>` 的结果前又拼了 `${ctx}`。删掉即可，`<c:url>` 会自动带 ContextPath。([mail-archive.com][1])
-
-* **重定向提示变 `????`**
-  → 重定向前做 `URLEncoder.encode(msg, "UTF-8")`；并在 Tomcat Connector 上设置 `URIEncoding="UTF-8"`。([baeldung.com][4])
-
-* **删除用户报 1451**
-  → 按本项目做法：在 Service 里**先删子表**再删父表；或（可选）将外键改为 `ON DELETE CASCADE`。([Bytebase][3])
-
-* **`@WebServlet` 不生效**
-  → 检查 `web.xml` 的 `metadata-complete`；为保险可在 `web.xml` 添加 `<servlet>` + `<servlet-mapping>`。([Stack Overflow][5])
-
----
