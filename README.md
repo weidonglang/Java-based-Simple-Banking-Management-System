@@ -1,24 +1,26 @@
-
 # Lab2 – Banking Demo (JSP/Servlet)
 
 *(中文 / English Bilingual README)*
 
-A minimal banking-style web app built with **JSP + Servlet + JDBC** on **Tomcat 8**. It supports user registration & login, account creation, deposit/withdraw, viewing own account, an **admin-only “list all users”** (via Filter), plus a **JSTL/EL demo: product list** page.
+A minimal banking-style web app built with **JSP + Servlet + JDBC** on **Tomcat 8**. It now supports **login-aware home page**, **admin-only user management** with **edit & delete**, JSTL/EL-based views, and **manual transactional cascade delete** (`account` → `user`).
 
-一个基于 **JSP + Servlet + JDBC**（Tomcat 8）的极简银行示例应用：注册/登录、开通账户、存取款、查询我的账户、**管理员专享“查询所有用户信息”**（Filter 拦截），并新增 **JSTL/EL 产品列表** 示例页面。
+这是一个基于 **JSP + Servlet + JDBC**（Tomcat 8）的极简银行示例应用；本次更新实现了**登录态感知首页**、**管理员用户管理（含修改/删除）**、基于 **JSTL/EL** 的视图渲染，以及**不改外键、在代码里按依赖顺序的手动事务级联删除**（先删 `account` 再删 `user`）。
 
 ---
 
 ## ✅ What’s New | 本次更新
 
-* `showUsers.jsp` 改造为 **JSTL + EL** 遍历显示用户集合（替代脚本片段）。
-* 新增 **产品列表**功能（纯模拟数据，演示 JSTL/EL）：
+* **Home (index.jsp)**：使用 JSTL/EL 判断登录态与角色
 
-  * `com.tianshi.entity.Product` 实体
-  * `com.tianshi.servlet.ShowProductsServlet`（`/showProducts`）
-  * `showProducts.jsp`（卡片式展示，含折扣价、库存、评分星星）
-* UI 轻量美化：统一按钮样式、卡片悬浮、返回上一级按钮。
-* 静态资源路径规范：图片置于 `src/main/webapp/imgs/`，JSP 使用 `<c:url>` 自动拼接 Context Path。
+  * 未登录：显示“登录/注册”；已登录：展示“欢迎，XX”；管理员：显示“用户管理”；普通用户：显示“我的账户/退出”。
+  * 所有链接通过 `<c:url>` 生成，**自动带 ContextPath**，避免 `/app/app/...` 双前缀导致 404。([mail-archive.com][1])
+* **User Management (showUsers.jsp)**：表格**新增操作列**（修改/删除）。
+* **Edit User**：`toUpdateUser` → `updateUser.jsp`（回显）→ `updateUserById`（保存，**PRG** 避免刷新重复提交）。([geeksforgeeks.org][2])
+* **Delete User**：新增 `DeleteUserByIdServlet`，在 **Service** 中开启事务：
+  **先删 `account`（子表）→ 再删 `user`（父表）**，一次提交，避免 MySQL 外键 **1451** 错误。([Bytebase][3])
+* **UTF-8 提示不再 “????”**：`sendRedirect(...?msg=中文)` 前做 `URLEncoder.encode`；Tomcat Connector 建议配 `URIEncoding="UTF-8"`。([baeldung.com][4])
+* **Servlet 映射更稳**：使用 `@WebServlet` 的同时在 `web.xml` 可加显式 `<servlet-mapping>`；若 `metadata-complete="true"`，容器**会忽略**注解。([Stack Overflow][5])
+* **调试输出**：DAO/Servlet 打印 SQL 影响行数与错误码，便于在 `catalina.log` 快速定位。
 
 ---
 
@@ -26,13 +28,10 @@ A minimal banking-style web app built with **JSP + Servlet + JDBC** on **Tomcat 
 
 * Register & Login（注册/登录）
 * Create one account per user（每人一个账户）
-* Deposit / Withdraw with transaction handling（存取款，含事务）
-* Show **my** account balance（查询我的账户）
-* **Admin-only**: show **all** users（仅管理员查看所有用户，`AdminAuthFilter` 保护）
-* **JSTL/EL** demos:
-
-  * `showUsers.jsp`：`<c:forEach>` + `${u.id}` / `${u.username}`
-  * `showProducts.jsp`：列表卡片、折扣计算、库存分档、评分星星、图片 `<c:url>`
+* Deposit / Withdraw（存取款；含事务）
+* Show **my** account（查询我的账户）
+* **Admin-only**: list/edit/delete users（仅管理员；带修改/删除）
+* JSTL/EL views（`<c:forEach>`, `<c:choose>`, `<c:url>` …）
 
 Session keys：`loginUser`, `userId`, `username`, `isAdmin`
 
@@ -40,145 +39,133 @@ Session keys：`loginUser`, `userId`, `username`, `isAdmin`
 
 ## 🧱 Tech Stack | 技术栈
 
-* **Java 8**, **Servlet/JSP**, **JSTL 1.2+**
+* **Java 8**, **Servlet 3.x / JSP**, **JSTL 1.2+**
 * **Tomcat 8.0.x**
 * **JDBC**（`JDBCUtil`）
-* JSP + 少量 CSS（按钮与卡片 UI）
+* **MySQL**（InnoDB 外键）
 
-> 引用 JSTL Core：
-> `<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>`
+> `<c:url value="/path">` 会自动拼接 ContextPath 并处理 URL 重写；无需再手动加 `${ctx}`。([mail-archive.com][1])
 
 ---
 
-## 📁 Project Layout | 目录结构（示例）
+## 📁 Project Layout | 目录
 
 ```
 src/main/java/
-  com/tianshi/entity/         # User, Account, Product   ← NEW
-  com/tianshi/dao/            # UserDao, AccountDao (+impl)
-  com/tianshi/service/        # UserService, AccountService (+impl)
-  com/tianshi/servlet/        # LoginServlet, CreateAccountServlet, ShowProductsServlet ← NEW
-  com/tianshi/filter/         # AdminAuthFilter
-  com/tianshi/util/           # JDBCUtil
+  com/web/entity/             # User, Account, Product
+  com/web/dao/                # UserDao + Impl, AccountDao + Impl
+  com/web/service/            # UserService + Impl, AccountService + Impl
+  com/web/servlet/            # Login, Regist, CreateAccount, ShowAccount, 
+                              # ShowUsers, ShowProducts,
+                              # ToUpdateUser, UpdateUserById, DeleteUserById   ← NEW
+  com/web/filter/             # AdminAuthFilter（保护 /showUsers 等）
+  com/web/util/               # JDBCUtil
 
 src/main/webapp/
-  index.jsp
-  login.jsp
-  regist.jsp
+  index.jsp                   # 登录态感知首页（JSTL/EL）
+  login.jsp / regist.jsp
   transaction.jsp
-  showAccount.jsp
-  accountResult.jsp
-  showUsers.jsp               ← JSTL/EL 改造版
-  showProducts.jsp            ← NEW（含“返回上一级”按钮）
-  imgs/                       ← xiaomi.png / gree.png / huawei.png
+  showAccount.jsp / accountResult.jsp
+  showUsers.jsp               # 操作列（修改/删除）
+  updateUser.jsp              # 回显 + 提交保存
+  showProducts.jsp
+  imgs/                       # 静态图片
   WEB-INF/web.xml
 ```
-
-> **静态资源**：放在 `src/main/webapp/imgs/`；JSP 中使用：
->
-> ```jsp
-> <c:url value="/imgs/gree.png" var="imgUrl"/>
-> <img src="${imgUrl}" alt="...">
-> ```
->
-> 这样会自动带上 Context Path，避免 404。
-
----
-
-## 🔐 Admin Guard via Filter | 管理员过滤器
-
-* 目标：仅管理员可访问 `GET /showUsers`。
-* 方式：`AdminAuthFilter` 映射到 `/showUsers`。登录成功后设置 `session.isAdmin`（当前用用户名 `admin` 触发；可扩展到 DB 角色）。
-* 可用注解 `@WebFilter(urlPatterns={"/showUsers"})` 或 `web.xml` 中 `<filter>` + `<filter-mapping>`。
 
 ---
 
 ## 🧪 Pages & Endpoints | 页面与端点
 
-| Page / API             | Method   | Access     | Purpose                        |
-| ---------------------- | -------- | ---------- | ------------------------------ |
-| `/login.jsp`, `/login` | GET/POST | Public     | Login（登录）                      |
-| `/regist.jsp`          | GET      | Public     | Register（注册）                   |
-| `/index.jsp`           | GET      | All/Logged | Home（首页，含“查看产品列表”美化按钮）         |
-| `/createAccount`       | POST     | Logged     | Create account（开通账户）           |
-| `/showAccount`         | GET      | Logged     | Show my account（查询我的账户）        |
-| `/transaction.jsp`     | GET      | Logged     | Deposit/Withdraw page（存取款页）    |
-| `/showUsers`           | GET      | Admin only | List all users（JSTL/EL 渲染用户表格） |
-| `/showProducts`        | GET      | Public     | **Product list demo（JSTL/EL）** |
+| Page / API             | Method   | Access       | Purpose                                   |
+| ---------------------- | -------- | ------------ | ----------------------------------------- |
+| `/index.jsp`           | GET      | All / Logged | Home（登录态/角色感知）                            |
+| `/login.jsp`, `/login` | GET/POST | Public       | Login                                     |
+| `/regist.jsp`          | GET      | Public       | Register                                  |
+| `/createAccount`       | POST     | Logged       | Create account                            |
+| `/showAccount`         | GET      | Logged       | Show my account                           |
+| `/showUsers`           | GET      | **Admin**    | List users（JSTL 表格）                       |
+| `/toUpdateUser?id=`    | GET      | **Admin**    | 跳转编辑页（表单回显）                               |
+| `/updateUserById`      | POST     | **Admin**    | 提交保存（**PRG**） ([geeksforgeeks.org][2])    |
+| `/deleteUserById?id=`  | GET      | **Admin**    | 删除（Service 事务内先删子表 `account` → 再删 `user`） |
 
 ---
 
-## 🧩 JSTL / EL Cheatsheet | 快速用法
+## ⚙️ DB Schema | 数据库
 
-* 遍历集合：
+```sql
+CREATE TABLE `user` (
+  `id` INT PRIMARY KEY AUTO_INCREMENT,
+  `username` VARCHAR(64) UNIQUE NOT NULL,
+  `password` VARCHAR(128) NOT NULL
+) ENGINE=InnoDB;
 
-  ```jsp
-  <c:forEach var="u" items="${users}">
-    ${u.id} - ${u.username}
-  </c:forEach>
-  ```
-* 条件与数值格式化：
+CREATE TABLE `account` (
+  `id` INT PRIMARY KEY AUTO_INCREMENT,
+  `user_id` INT NOT NULL UNIQUE,
+  `balance` DECIMAL(18,2) NOT NULL DEFAULT 0,
+  CONSTRAINT `account_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user`(`id`)
+) ENGINE=InnoDB;
+```
 
-  ```jsp
-  <c:choose>
-    <c:when test="${p.discount > 0}">
-      <fmt:formatNumber value="${p.price * (1 - p.discount)}" maxFractionDigits="2"/>
-    </c:when>
-    <c:otherwise>${p.price}</c:otherwise>
-  </c:choose>
-  ```
-* 截断描述：
-
-  ```jsp
-  <c:choose>
-    <c:when test="${fn:length(p.description) > 50}">
-      ${fn:substring(p.description, 0, 50)}...
-    </c:when>
-    <c:otherwise>${p.description}</c:otherwise>
-  </c:choose>
-  ```
-* 图片 URL（自动加 Context Path）：
-
-  ```jsp
-  <c:url value="${p.image}" var="imgUrl"/><img src="${imgUrl}">
-  ```
+> 为什么删除用户会被拦住？
+> 当子表引用父表时，直接删父表会报 **ERROR 1451 (SQLSTATE 23000)**。我们采用**方案 B：不改外键**，在 Service 里**按依赖顺序手动删除**（`account` → `user`），一次事务提交。若未来改为库层级联，可把外键改成 `ON DELETE CASCADE`。([Bytebase][3])
 
 ---
 
-## 🖼️ Product Images | 产品图片
+## 🔐 Security & Guard | 权限与拦截
 
-* 放置位置：`src/main/webapp/imgs/`
-* 示例文件：`xiaomi.png`、`gree.png`、`huawei.png`
-* **注意文件名一致性**：`ShowProductsServlet` 中第二条测试数据使用 `"/imgs/gree.png"`（不是 `geli.png`）。
+* `AdminAuthFilter` 保护：`/showUsers`, `/toUpdateUser`, `/updateUserById`, `/deleteUserById`
+* 可选 CSRF：`updateUser.jsp` 表单带 token，Servlet 校验。
 
 ---
 
-## ⚙️ DB & Run | 数据库与运行
+## 🚀 Run | 运行
 
-* 在 `JDBCUtil` 中配置 JDBC URL/账号/密码。
-* 建库 / 建表（示例）：
+1. 配置 `JDBCUtil` 的 URL/用户名/密码；建库建表（上节 SQL）。
+2. IDE 配置 Tomcat 8（添加 Artifact），或打包 WAR 丢到 `webapps/`。
+3. 确保 GET/重定向参数使用 UTF-8：
 
-  ```sql
-  CREATE TABLE user (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    username VARCHAR(64) UNIQUE NOT NULL,
-    password VARCHAR(128) NOT NULL
-  );
-  CREATE TABLE account (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    user_id INT UNIQUE NOT NULL,
-    balance DECIMAL(18,2) NOT NULL DEFAULT 0,
-    FOREIGN KEY (user_id) REFERENCES user(id)
-  );
+   * 重定向消息：`URLEncoder.encode(msg, "UTF-8")`；
+   * Tomcat `conf/server.xml` 的 HTTP Connector 增加 `URIEncoding="UTF-8"`（推荐）。([baeldung.com][4])
+
+---
+
+## 🧩 Implementation Notes | 实现要点
+
+* **JSTL URL 生成**：使用
+
+  ```jsp
+  <c:url var="editUrl" value="/toUpdateUser"><c:param name="id" value="${u.id}"/></c:url>
+  <a href="${editUrl}">修改</a>
   ```
-* 运行：IDE 配好 Tomcat（8.0.x），添加 Artifact，启动；或打包 WAR 放入 `tomcat/webapps/`。
+
+  *不要*再手动拼 `${pageContext.request.contextPath}`，否则可能出现 `/context/context/...`。([mail-archive.com][1])
+
+* **PRG 模式**：编辑提交后 `sendRedirect("/showUsers?msg=...")`，避免刷新重复提交。([geeksforgeeks.org][2])
+
+* **Servlet 映射**：
+
+  * 默认使用 `@WebServlet("/deleteUserById")`；
+  * 若 `web.xml` 设置了 `metadata-complete="true"`，容器会**忽略注解**，需在 `web.xml` **显式 `<servlet-mapping>`**。([Stack Overflow][5])
+
+* **手动事务级联删除（方案 B）**：
+  在 `UserServiceImpl.deleteUserDeep(id)` 中：`setAutoCommit(false)` → `DELETE FROM account WHERE user_id=?` → `DELETE FROM user WHERE id=?` → `commit()`；异常 `rollback()`。
 
 ---
 
-## 🎨 UI Notes | 界面说明
+## 🛠️ Troubleshooting | 常见问题
 
-* 全站统一按钮样式（首页“查看产品列表”按钮与产品页按钮同款）。
-* `showProducts.jsp` 顶部提供 **“← 返回上一级”** 按钮，返回首页。
-* 卡片悬浮、圆角、轻阴影与 `object-fit: contain` 确保图片等比缩放不变形。
+* **点击链接 404，URL 里出现 `/app/app/...`**
+  → 你在 `<c:url>` 的结果前又拼了 `${ctx}`。删掉即可，`<c:url>` 会自动带 ContextPath。([mail-archive.com][1])
 
+* **重定向提示变 `????`**
+  → 重定向前做 `URLEncoder.encode(msg, "UTF-8")`；并在 Tomcat Connector 上设置 `URIEncoding="UTF-8"`。([baeldung.com][4])
 
+* **删除用户报 1451**
+  → 按本项目做法：在 Service 里**先删子表**再删父表；或（可选）将外键改为 `ON DELETE CASCADE`。([Bytebase][3])
+
+* **`@WebServlet` 不生效**
+  → 检查 `web.xml` 的 `metadata-complete`；为保险可在 `web.xml` 添加 `<servlet>` + `<servlet-mapping>`。([Stack Overflow][5])
+
+---
