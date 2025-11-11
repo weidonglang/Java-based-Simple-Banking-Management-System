@@ -13,13 +13,13 @@ A minimal banking-style web app built with **JSP + Servlet + JDBC** on **Tomcat 
 * **Home (index.jsp)**：使用 JSTL/EL 判断登录态与角色
 
   * 未登录：显示“登录/注册”；已登录：展示“欢迎，XX”；管理员：显示“用户管理”；普通用户：显示“我的账户/退出”。
-  * 所有链接通过 `<c:url>` 生成，**自动带 ContextPath**，避免 `/app/app/...` 双前缀导致 404。([mail-archive.com][1])
+  * 所有链接通过 `<c:url>` 生成，**自动带 ContextPath**，避免 `/app/app/...` 双前缀导致 404。
 * **User Management (showUsers.jsp)**：表格**新增操作列**（修改/删除）。
-* **Edit User**：`toUpdateUser` → `updateUser.jsp`（回显）→ `updateUserById`（保存，**PRG** 避免刷新重复提交）。([geeksforgeeks.org][2])
+* **Edit User**：`toUpdateUser` → `updateUser.jsp`（回显）→ `updateUserById`（保存，**PRG** 避免刷新重复提交）。
 * **Delete User**：新增 `DeleteUserByIdServlet`，在 **Service** 中开启事务：
   **先删 `account`（子表）→ 再删 `user`（父表）**，一次提交，避免 MySQL 外键 **1451** 错误。([Bytebase][3])
-* **UTF-8 提示不再 “????”**：`sendRedirect(...?msg=中文)` 前做 `URLEncoder.encode`；Tomcat Connector 建议配 `URIEncoding="UTF-8"`。([baeldung.com][4])
-* **Servlet 映射更稳**：使用 `@WebServlet` 的同时在 `web.xml` 可加显式 `<servlet-mapping>`；若 `metadata-complete="true"`，容器**会忽略**注解。([Stack Overflow][5])
+* **UTF-8 提示不再 “????”**：`sendRedirect(...?msg=中文)` 前做 `URLEncoder.encode`；Tomcat Connector 建议配 `URIEncoding="UTF-8"`。
+* **Servlet 映射更稳**：使用 `@WebServlet` 的同时在 `web.xml` 可加显式 `<servlet-mapping>`；若 `metadata-complete="true"`，容器**会忽略**注解。
 * **调试输出**：DAO/Servlet 打印 SQL 影响行数与错误码，便于在 `catalina.log` 快速定位。
 
 ---
@@ -86,7 +86,7 @@ src/main/webapp/
 | `/showAccount`         | GET      | Logged       | Show my account                           |
 | `/showUsers`           | GET      | **Admin**    | List users（JSTL 表格）                       |
 | `/toUpdateUser?id=`    | GET      | **Admin**    | 跳转编辑页（表单回显）                               |
-| `/updateUserById`      | POST     | **Admin**    | 提交保存（**PRG**） ([geeksforgeeks.org][2])    |
+| `/updateUserById`      | POST     | **Admin**    | 提交保存（**PRG**）    |
 | `/deleteUserById?id=`  | GET      | **Admin**    | 删除（Service 事务内先删子表 `account` → 再删 `user`） |
 
 ---
