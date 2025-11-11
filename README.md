@@ -4,7 +4,7 @@
 
 A minimal banking-style web app built with **JSP + Servlet + JDBC** on **Tomcat 8**. It now supports **login-aware home page**, **admin-only user management** with **edit & delete**, JSTL/EL-based views, and **manual transactional cascade delete** (`account` → `user`).
 
-这是一个基于 **JSP + Servlet + JDBC**（Tomcat 8）的极简银行示例应用；本次更新实现了**登录态感知首页**、**管理员用户管理（含修改/删除）**、基于 **JSTL/EL** 的视图渲染，以及**不改外键、在代码里按依赖顺序的手动事务级联删除**（先删 `account` 再删 `user`）。
+这是一个基于 **JSP + Servlet + JDBC**（Tomcat 8）的极简银行示例应用；本次更新实现了**登录态感知首页**、**管理员用户管理（含修改/删除）**、基于 **JSTL/EL** 的视图渲染，以及**不改外键、在代码里按依赖顺序的手动事务级联删除**。
 
 ---
 
