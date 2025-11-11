@@ -24,7 +24,6 @@ public class Product {
         this.image = image;
     }
 
-    // --- getter / setter 省略可由 IDE 生成 ---
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
     public String getName() { return name; }
