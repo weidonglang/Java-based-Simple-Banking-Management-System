@@ -13,11 +13,10 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 /**
- * 展示用户列表（默认第 1 页）
- * 方便从 /showUsers 入口访问。
+ * 分页查询用户列表的 Servlet
  */
-@WebServlet("/showUsers")
-public class ShowUsersServlet extends HttpServlet {
+@WebServlet("/showUsersByPage")
+public class ShowUsersByPageServlet extends HttpServlet {
 
     private final UserService userService = new UserServiceImpl();
     private static final int PAGE_SIZE = 10;
@@ -26,10 +25,19 @@ public class ShowUsersServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req,
                          HttpServletResponse resp) throws ServletException, IOException {
 
-        Page<User> page = userService.findUsersByPage(1, PAGE_SIZE);
+        req.setCharacterEncoding("UTF-8");
+
+        int currentPage = 1; // 默认第一页
+        String cpStr = req.getParameter("currentPage");
+        if (cpStr != null && cpStr.trim().length() > 0) {
+            try {
+                currentPage = Integer.parseInt(cpStr.trim());
+            } catch (NumberFormatException ignored) {}
+        }
+
+        Page<User> page = userService.findUsersByPage(currentPage, PAGE_SIZE);
         req.setAttribute("page", page);
 
-        // 如果有 msg 之类的提示，可以从参数带过来
         String msg = req.getParameter("msg");
         if (msg != null && !msg.trim().isEmpty()) {
             req.setAttribute("msg", msg.trim());

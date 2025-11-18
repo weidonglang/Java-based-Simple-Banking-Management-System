@@ -189,4 +189,46 @@ public class UserDaoImpl implements UserDao {
         }
         return list;
     }
+
+    @Override
+    public int countAll() {
+        final String sql = "SELECT COUNT(*) FROM user";
+        try (Connection conn = JDBCUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    @Override
+    public List<User> findByPage(int offset, int size) {
+        final String sql = "SELECT id, username, password FROM user LIMIT ?, ?";
+        List<User> list = new ArrayList<>();
+
+        try (Connection conn = JDBCUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, offset);
+            ps.setInt(2, size);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    User u = new User();
+                    u.setId(rs.getInt("id"));
+                    u.setUsername(rs.getString("username"));
+                    u.setPassword(rs.getString("password"));
+                    list.add(u);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
 }

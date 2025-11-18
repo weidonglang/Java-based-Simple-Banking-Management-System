@@ -11,12 +11,8 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 /**
- * Druid 连接池工具类：
- *  - 静态初始化 DataSource
- *  - 提供 getConnection()
- *  - 提供关闭资源的便捷方法
- *
- * 需要在 src/main/resources 下提供 db.properties 配置文件。
+ * Druid 连接池工具类。
+ * 需要在 src/main/resources 下提供 db.properties。
  */
 public class DruidUtil {
 
@@ -25,13 +21,12 @@ public class DruidUtil {
     static {
         try {
             Properties props = new Properties();
-            // db.properties 放在 src/main/resources 根目录
+            // db.properties 放在 resources 根目录
             try (InputStream in = DruidUtil.class
                     .getClassLoader()
                     .getResourceAsStream("db.properties")) {
-
                 if (in == null) {
-                    throw new RuntimeException("未找到 db.properties，请确认放在 src/main/resources 下");
+                    throw new RuntimeException("未找到 db.properties，请确认在 src/main/resources 下");
                 }
                 props.load(in);
             }

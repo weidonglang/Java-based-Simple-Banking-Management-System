@@ -6,7 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
- * JDBC 工具类（对外），内部基于 Druid 连接池。
+ * JDBC 工具类，对外统一入口，内部基于 Druid 连接池。
  */
 public class JDBCUtil {
 

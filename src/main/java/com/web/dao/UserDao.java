@@ -5,29 +5,37 @@ import com.web.entity.User;
 import java.util.List;
 
 /**
- * 用户相关的 DAO 接口
+ * 用户相关 DAO 接口
  */
 public interface UserDao {
 
-    // 登录用
+    // 登录
     User findByUsernameAndPassword(String username, String password);
 
-    // 按用户名精确查找（注册重名校验等）
+    // 查重 / 精确查
     User findByUsername(String username);
 
     // 新增用户
     boolean addUser(User user);
 
-    // 查询全部用户
+    // 查询所有用户
     List<User> findAll();
 
-    // 编辑 / 删除所需
+    // 按 id 查询
     User findById(int id);
 
+    // 更新用户
     int update(User user);
 
+    // 删除用户
     int deleteById(int id);
 
-    // 按用户名关键字模糊查询
+    // 模糊查询（按用户名）
     List<User> findByUsernameLike(String keyword);
+
+    // 统计用户总数（分页用）
+    int countAll();
+
+    // 分页查询
+    List<User> findByPage(int offset, int size);
 }

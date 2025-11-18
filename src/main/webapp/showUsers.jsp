@@ -32,6 +32,38 @@
     .toolbar form button:hover{
       background:#4338ca;border-color:#4338ca;
     }
+    /* 分页样式 */
+    .pager{
+      margin-top:12px;
+      display:flex;
+      flex-wrap:wrap;
+      align-items:center;
+      gap:12px;
+      font-size:14px;
+      color:#4b5563;
+    }
+    .pager-links a,
+    .pager-links span{
+      display:inline-block;
+      margin:0 3px;
+      padding:3px 8px;
+      border-radius:4px;
+      text-decoration:none;
+      border:1px solid #cbd5e1;
+    }
+    .pager-links a{
+      color:#1f2937;
+      background:#fff;
+    }
+    .pager-links a:hover{
+      background:#f3f4f6;
+    }
+    .pager-links .current{
+      background:#4f46e5;
+      border-color:#4f46e5;
+      color:#fff;
+      font-weight:600;
+    }
   </style>
 </head>
 <body>
@@ -66,7 +98,7 @@
 </div>
 
 <c:choose>
-  <c:when test="${not empty users}">
+  <c:when test="${not empty page and not empty page.data}">
     <table>
       <thead>
       <tr>
@@ -76,7 +108,7 @@
       </tr>
       </thead>
       <tbody>
-      <c:forEach var="u" items="${users}">
+      <c:forEach var="u" items="${page.data}">
         <tr>
           <td><c:out value="${u.id}"/></td>
           <td><c:out value="${u.username}"/></td>
@@ -99,6 +131,40 @@
       </c:forEach>
       </tbody>
     </table>
+
+    <!-- 分页信息和页码链接 -->
+    <div class="pager">
+      <span>
+        共 ${page.total} 条记录，
+        每页 ${page.size} 条，
+        当前第 ${page.currentPage} / ${page.totalPage} 页
+      </span>
+
+      <div class="pager-links">
+        <!-- 上一页 -->
+        <c:if test="${page.currentPage > 1}">
+          <a href="${ctx}/showUsersByPage?currentPage=${page.currentPage - 1}">上一页</a>
+        </c:if>
+
+        <!-- 具体页码 -->
+        <c:forEach var="p" begin="1" end="${page.totalPage}">
+          <c:choose>
+            <c:when test="${p == page.currentPage}">
+              <span class="current">${p}</span>
+            </c:when>
+            <c:otherwise>
+              <a href="${ctx}/showUsersByPage?currentPage=${p}">${p}</a>
+            </c:otherwise>
+          </c:choose>
+        </c:forEach>
+
+        <!-- 下一页 -->
+        <c:if test="${page.currentPage < page.totalPage}">
+          <a href="${ctx}/showUsersByPage?currentPage=${page.currentPage + 1}">下一页</a>
+        </c:if>
+      </div>
+    </div>
+
   </c:when>
   <c:otherwise>
     <p class="empty">暂无用户数据。</p>
