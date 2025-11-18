@@ -40,19 +40,11 @@ public class UserServiceImpl implements UserService {
     public boolean update(User user) {
         return userDao.update(user) > 0;
     }
-
-    // 旧的“只删 user 表”保留（但会被外键拦住）
+    // 旧的“只删 user 表”保留
     @Override
     public boolean deleteById(int id) {
         return userDao.deleteById(id) > 0;
     }
-
-    /**
-     * ✅ 手动级联删除：在一个事务中按依赖顺序删除
-     * 1) DELETE FROM account WHERE user_id=?
-     * 2) DELETE FROM `user` WHERE id=?
-     * 失败回滚；成功提交。
-     */
     @Override
     public boolean deleteUserDeep(int userId) {
         final String delAccount = "DELETE FROM `account` WHERE user_id=?";
@@ -69,7 +61,6 @@ public class UserServiceImpl implements UserService {
                     int accRows = ps1.executeUpdate();
                     System.out.println("[DeepDel] account deleted rows=" + accRows);
                 }
-
                 // ② 再删父表 user
                 int userRows;
                 try (PreparedStatement ps2 = conn.prepareStatement(delUser)) {
@@ -77,13 +68,11 @@ public class UserServiceImpl implements UserService {
                     userRows = ps2.executeUpdate();
                     System.out.println("[DeepDel] user deleted rows=" + userRows);
                 }
-
                 conn.commit();
                 System.out.println("[DeepDel] commit ok");
-                // 可选恢复原状态
+                // 恢复原状态
                 conn.setAutoCommit(oldAutoCommit);
                 return userRows > 0;
-
             } catch (SQLException e) {
                 System.out.println("[DeepDel] exception: " + e.getMessage() +
                         ", sqlState=" + e.getSQLState() + ", code=" + e.getErrorCode());

@@ -9,7 +9,7 @@ public interface UserDao {
     boolean addUser(User user);
     List<User> findAll();
 
-    // 新增：编辑/删除所需
+    // 编辑/删除所需
     User findById(int id);
     int update(User user);
     int deleteById(int id);

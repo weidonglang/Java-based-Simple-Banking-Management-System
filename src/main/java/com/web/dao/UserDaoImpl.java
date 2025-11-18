@@ -1,14 +1,10 @@
 package com.web.dao;
-
 import com.web.entity.User;
 import com.web.util.JDBCUtil;
-
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-
 public class UserDaoImpl implements UserDao {
-
     @Override
     public User findByUsernameAndPassword(String username, String password) {
         final String sql = "SELECT id, username, password FROM `user` WHERE username=? AND password=?";
@@ -31,7 +27,6 @@ public class UserDaoImpl implements UserDao {
         }
         return null;
     }
-
     @Override
     public User findByUsername(String username) {
         final String sql = "SELECT id, username, password FROM `user` WHERE username=?";
@@ -53,7 +48,6 @@ public class UserDaoImpl implements UserDao {
         }
         return null;
     }
-
     @Override
     public boolean addUser(User user) {
         final String sql = "INSERT INTO `user` (username, password) VALUES (?, ?)";
@@ -68,7 +62,6 @@ public class UserDaoImpl implements UserDao {
         }
         return false;
     }
-
     @Override
     public List<User> findAll() {
         final String sql = "SELECT id, username, password FROM `user` ORDER BY id ASC";
@@ -89,8 +82,6 @@ public class UserDaoImpl implements UserDao {
         }
         return list;
     }
-
-    // ===== 新增：根据 id 查询，用于回显旧值 =====
     @Override
     public User findById(int id) {
         final String sql = "SELECT id, username, password FROM `user` WHERE id=?";
@@ -113,16 +104,28 @@ public class UserDaoImpl implements UserDao {
         }
         return null;
     }
-
-    // ===== 新增：提交修改（仅示例更新 username；可按需扩展） =====
     @Override
     public int update(User user) {
-        final String sql = "UPDATE `user` SET username=? WHERE id=?";
+        boolean withPwd = user.getPassword() != null && !user.getPassword().trim().isEmpty();
+        final String sql = withPwd
+                ? "UPDATE `user` SET username=?, password=? WHERE id=?"
+                : "UPDATE `user` SET username=? WHERE id=?";
+
         try (Connection conn = JDBCUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            System.out.println("[DAO] update sql=" + sql + ", id=" + user.getId() + ", username=" + user.getUsername());
+
+            System.out.println("[DAO] update sql=" + sql + ", id=" + user.getId()
+                    + ", username=" + user.getUsername()
+                    + (withPwd ? ", withPwd=true" : ", withPwd=false"));
+
             ps.setString(1, user.getUsername());
-            ps.setInt(2, user.getId());
+            if (withPwd) {
+                ps.setString(2, user.getPassword());
+                ps.setInt(3, user.getId());
+            } else {
+                ps.setInt(2, user.getId());
+            }
+
             int rows = ps.executeUpdate();
             System.out.println("[DAO] update affectedRows=" + rows);
             return rows;
@@ -132,8 +135,6 @@ public class UserDaoImpl implements UserDao {
         }
         return 0;
     }
-
-    // ===== 新增：删除，并输出受影响行数 / 外键错误 =====
     @Override
     public int deleteById(int id) {
         final String sql = "DELETE FROM `user` WHERE id=?";
