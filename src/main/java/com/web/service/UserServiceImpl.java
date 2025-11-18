@@ -15,14 +15,11 @@ import java.util.List;
  * 用户业务层实现
  */
 public class UserServiceImpl implements UserService {
-
     private final UserDao userDao = new UserDaoImpl();
-
     @Override
     public User login(String username, String password) {
         return userDao.findByUsernameAndPassword(username, password);
     }
-
     @Override
     public boolean register(String username, String password) {
         User u = new User();
@@ -30,27 +27,22 @@ public class UserServiceImpl implements UserService {
         u.setPassword(password);
         return userDao.addUser(u);
     }
-
     @Override
     public List<User> findAllUsers() {
         return userDao.findAll();
     }
-
     @Override
     public User getById(int id) {
         return userDao.findById(id);
     }
-
     @Override
     public boolean update(User user) {
         return userDao.update(user) > 0;
     }
-
     @Override
     public boolean deleteById(int id) {
         return userDao.deleteById(id) > 0;
     }
-
     @Override
     public boolean deleteUserDeep(int userId) {
         final String delAccountSql = "DELETE FROM account WHERE user_id=?";
@@ -98,12 +90,10 @@ public class UserServiceImpl implements UserService {
             return false;
         }
     }
-
     @Override
     public List<User> findByUsernameLike(String keyword) {
         return userDao.findByUsernameLike(keyword);
     }
-
     @Override
     public Page<User> findUsersByPage(int currentPage, int size) {
         int total = userDao.countAll();

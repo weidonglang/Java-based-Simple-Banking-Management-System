@@ -1,5 +1,4 @@
 package com.web.util;
-
 import com.alibaba.druid.pool.DruidDataSourceFactory;
 
 import javax.sql.DataSource;
@@ -9,15 +8,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
-
 /**
  * Druid 连接池工具类。
  * 需要在 src/main/resources 下提供 db.properties。
  */
 public class DruidUtil {
-
     private static DataSource dataSource;
-
     static {
         try {
             Properties props = new Properties();
@@ -30,7 +26,6 @@ public class DruidUtil {
                 }
                 props.load(in);
             }
-
             dataSource = DruidDataSourceFactory.createDataSource(props);
             System.out.println("[DruidUtil] DataSource 初始化成功");
         } catch (Exception e) {
@@ -38,12 +33,10 @@ public class DruidUtil {
             throw new ExceptionInInitializerError(e);
         }
     }
-
     /** 从 Druid 连接池获取连接 */
     public static Connection getConnection() throws SQLException {
         return dataSource.getConnection();
     }
-
     /** 关闭资源（查询用） */
     public static void close(Connection conn, PreparedStatement ps, ResultSet rs) {
         if (rs != null) {
@@ -56,7 +49,6 @@ public class DruidUtil {
             try { conn.close(); } catch (SQLException ignored) {}
         }
     }
-
     /** 关闭资源（增删改用） */
     public static void close(Connection conn, PreparedStatement ps) {
         close(conn, ps, null);

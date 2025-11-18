@@ -71,7 +71,6 @@
 
 <h2>所有用户</h2>
 
-<!-- 可选提示：支持从 request 属性或 ?msg= 提示 -->
 <c:if test="${not empty requestScope.msg or not empty param.msg}">
   <div class="msg">
     <c:out value="${not empty requestScope.msg ? requestScope.msg : param.msg}"/>
