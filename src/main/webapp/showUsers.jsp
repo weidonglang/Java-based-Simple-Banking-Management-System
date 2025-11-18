@@ -1,5 +1,7 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -19,7 +21,17 @@
     .btn-danger{border-color:#fca5a5;color:#b91c1c;background:#fff0f0}
     .btn-danger:hover{background:#fee2e2}
     .msg{margin:12px 0;padding:10px;border-radius:6px;background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;}
-    .toolbar{margin-bottom:12px}
+    .toolbar{margin-bottom:12px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+    .toolbar form input[type="text"]{
+      padding:6px 10px;border-radius:6px;border:1px solid #cbd5e1;min-width:200px;
+    }
+    .toolbar form button{
+      padding:6px 12px;border-radius:6px;border:1px solid #4f46e5;background:#4f46e5;
+      color:#fff;cursor:pointer;transition:background .15s ease,border-color .15s ease;
+    }
+    .toolbar form button:hover{
+      background:#4338ca;border-color:#4338ca;
+    }
   </style>
 </head>
 <body>
@@ -36,6 +48,21 @@
 
 <div class="toolbar">
   <a href="${ctx}/index.jsp">← 返回首页</a>
+
+  <!-- 搜索表单：提交到 /searchUser -->
+  <form action="${ctx}/searchUser" method="get">
+    <input type="text"
+           name="username"
+           placeholder="请输入用户名关键字"
+           value="${fn:escapeXml(searchKeyword != null ? searchKeyword : param.username)}" />
+    <button type="submit">搜索</button>
+    <c:if test="${not empty searchKeyword}">
+      <span style="margin-left:8px;color:#4b5563;">
+        当前关键字：
+        <strong>${fn:escapeXml(searchKeyword)}</strong>
+      </span>
+    </c:if>
+  </form>
 </div>
 
 <c:choose>

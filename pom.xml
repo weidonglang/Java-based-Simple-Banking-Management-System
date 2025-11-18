@@ -35,6 +35,12 @@
             <artifactId>jstl</artifactId>
             <version>1.2</version>
         </dependency>
+        <!-- Druid 连接池 -->
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>druid</artifactId>
+            <version>1.2.27</version>
+        </dependency>
 
         <!-- 备选（不要与上面同时使用）：
         <dependency>

@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.util.List;
 
 @WebServlet("/login")
 public class LoginServlet extends HttpServlet {
@@ -51,4 +52,10 @@ public class LoginServlet extends HttpServlet {
         // 回首页
         response.sendRedirect(request.getContextPath() + "/index.jsp");
     }
+
+    /**
+     * 基于 Druid 连接池的“按用户名模糊搜索用户信息” Servlet
+     */
+
+    
 }

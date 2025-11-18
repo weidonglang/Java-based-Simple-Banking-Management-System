@@ -1,17 +1,30 @@
 package com.web.dao;
+
 import com.web.entity.User;
 import com.web.util.JDBCUtil;
-import java.sql.*;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLIntegrityConstraintViolationException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+
+/**
+ * UserDao 的 JDBC 实现，底层通过 JDBCUtil(Druid) 获取连接
+ */
 public class UserDaoImpl implements UserDao {
+
     @Override
     public User findByUsernameAndPassword(String username, String password) {
-        final String sql = "SELECT id, username, password FROM `user` WHERE username=? AND password=?";
+        final String sql = "SELECT id, username, password FROM user WHERE username=? AND password=?";
         try (Connection conn = JDBCUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
+
             ps.setString(1, username);
             ps.setString(2, password);
+
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     User u = new User();
@@ -22,17 +35,19 @@ public class UserDaoImpl implements UserDao {
                 }
             }
         } catch (SQLException e) {
-            System.out.println("[DAO][findByUsernameAndPassword] sqlState=" + e.getSQLState() + ", code=" + e.getErrorCode());
             e.printStackTrace();
         }
         return null;
     }
+
     @Override
     public User findByUsername(String username) {
-        final String sql = "SELECT id, username, password FROM `user` WHERE username=?";
+        final String sql = "SELECT id, username, password FROM user WHERE username=?";
         try (Connection conn = JDBCUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
+
             ps.setString(1, username);
+
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     User u = new User();
@@ -43,32 +58,37 @@ public class UserDaoImpl implements UserDao {
                 }
             }
         } catch (SQLException e) {
-            System.out.println("[DAO][findByUsername] sqlState=" + e.getSQLState() + ", code=" + e.getErrorCode());
             e.printStackTrace();
         }
         return null;
     }
+
     @Override
     public boolean addUser(User user) {
-        final String sql = "INSERT INTO `user` (username, password) VALUES (?, ?)";
+        final String sql = "INSERT INTO user(username, password) VALUES(?, ?)";
         try (Connection conn = JDBCUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
+
             ps.setString(1, user.getUsername());
             ps.setString(2, user.getPassword());
-            return ps.executeUpdate() > 0;
+
+            int rows = ps.executeUpdate();
+            return rows > 0;
         } catch (SQLException e) {
-            System.out.println("[DAO][addUser] sqlState=" + e.getSQLState() + ", code=" + e.getErrorCode());
             e.printStackTrace();
         }
         return false;
     }
+
     @Override
     public List<User> findAll() {
-        final String sql = "SELECT id, username, password FROM `user` ORDER BY id ASC";
+        final String sql = "SELECT id, username, password FROM user";
         List<User> list = new ArrayList<>();
+
         try (Connection conn = JDBCUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
+
             while (rs.next()) {
                 User u = new User();
                 u.setId(rs.getInt("id"));
@@ -77,18 +97,19 @@ public class UserDaoImpl implements UserDao {
                 list.add(u);
             }
         } catch (SQLException e) {
-            System.out.println("[DAO][findAll] sqlState=" + e.getSQLState() + ", code=" + e.getErrorCode());
             e.printStackTrace();
         }
         return list;
     }
+
     @Override
     public User findById(int id) {
-        final String sql = "SELECT id, username, password FROM `user` WHERE id=?";
+        final String sql = "SELECT id, username, password FROM user WHERE id=?";
         try (Connection conn = JDBCUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            System.out.println("[DAO] findById sql=" + sql + ", id=" + id);
+
             ps.setInt(1, id);
+
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     User u = new User();
@@ -99,59 +120,73 @@ public class UserDaoImpl implements UserDao {
                 }
             }
         } catch (SQLException e) {
-            System.out.println("[DAO][findById] sqlState=" + e.getSQLState() + ", code=" + e.getErrorCode());
             e.printStackTrace();
         }
         return null;
     }
+
     @Override
     public int update(User user) {
-        boolean withPwd = user.getPassword() != null && !user.getPassword().trim().isEmpty();
-        final String sql = withPwd
-                ? "UPDATE `user` SET username=?, password=? WHERE id=?"
-                : "UPDATE `user` SET username=? WHERE id=?";
-
+        final String sql = "UPDATE user SET username=?, password=? WHERE id=?";
         try (Connection conn = JDBCUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            System.out.println("[DAO] update sql=" + sql + ", id=" + user.getId()
-                    + ", username=" + user.getUsername()
-                    + (withPwd ? ", withPwd=true" : ", withPwd=false"));
-
             ps.setString(1, user.getUsername());
-            if (withPwd) {
-                ps.setString(2, user.getPassword());
-                ps.setInt(3, user.getId());
-            } else {
-                ps.setInt(2, user.getId());
-            }
+            ps.setString(2, user.getPassword());
+            ps.setInt(3, user.getId());
 
-            int rows = ps.executeUpdate();
-            System.out.println("[DAO] update affectedRows=" + rows);
-            return rows;
+            return ps.executeUpdate();
         } catch (SQLException e) {
-            System.out.println("[DAO][update] sqlState=" + e.getSQLState() + ", code=" + e.getErrorCode());
             e.printStackTrace();
         }
         return 0;
     }
+
     @Override
     public int deleteById(int id) {
-        final String sql = "DELETE FROM `user` WHERE id=?";
+        final String sql = "DELETE FROM user WHERE id=?";
         try (Connection conn = JDBCUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            System.out.println("[DAO] deleteById sql=" + sql + ", id=" + id + ", autoCommit=" + conn.getAutoCommit());
+
             ps.setInt(1, id);
             int rows = ps.executeUpdate();
-            System.out.println("[DAO] deleteById affectedRows=" + rows);
+            System.out.println("[UserDaoImpl] deleteById affectedRows=" + rows);
             return rows;
         } catch (SQLIntegrityConstraintViolationException fk) {
-            System.out.println("[DAO][FK] " + fk.getMessage() + ", sqlState=" + fk.getSQLState() + ", errorCode=" + fk.getErrorCode());
+            // 有外键约束（比如 account.user_id）会走到这里
+            System.out.println("[UserDaoImpl][FK] " + fk.getMessage()
+                    + ", sqlState=" + fk.getSQLState()
+                    + ", errorCode=" + fk.getErrorCode());
             throw new RuntimeException("FK_CONSTRAINT", fk);
         } catch (SQLException e) {
-            System.out.println("[DAO][deleteById] " + e.getMessage() + ", sqlState=" + e.getSQLState() + ", code=" + e.getErrorCode());
+            System.out.println("[UserDaoImpl][deleteById] " + e.getMessage());
             e.printStackTrace();
         }
         return 0;
+    }
+
+    @Override
+    public List<User> findByUsernameLike(String keyword) {
+        final String sql = "SELECT id, username, password FROM user WHERE username LIKE ?";
+        List<User> list = new ArrayList<>();
+
+        try (Connection conn = JDBCUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, "%" + keyword + "%");
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    User u = new User();
+                    u.setId(rs.getInt("id"));
+                    u.setUsername(rs.getString("username"));
+                    u.setPassword(rs.getString("password"));
+                    list.add(u);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
     }
 }
