@@ -3,6 +3,7 @@ import com.web.entity.Page;
 import com.web.entity.User;
 import com.web.service.UserService;
 import com.web.service.UserServiceImpl;
+import com.web.util.CsrfUtil;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -29,6 +30,7 @@ public class ShowUsersByPageServlet extends HttpServlet {
         }
         Page<User> page = userService.findUsersByPage(currentPage, PAGE_SIZE);
         req.setAttribute("page", page);
+        CsrfUtil.getOrCreateToken(req);
 
         String msg = req.getParameter("msg");
         if (msg != null && !msg.trim().isEmpty()) {

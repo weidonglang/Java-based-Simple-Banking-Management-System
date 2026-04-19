@@ -4,6 +4,7 @@ import com.web.entity.Page;
 import com.web.entity.User;
 import com.web.service.UserService;
 import com.web.service.UserServiceImpl;
+import com.web.util.CsrfUtil;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -50,6 +51,7 @@ public class SearchUserServlet extends HttpServlet {
             req.setAttribute("searchKeyword", keyword);
         }
 
+        CsrfUtil.getOrCreateToken(req);
         req.getRequestDispatcher("/showUsers.jsp").forward(req, resp);
     }
 

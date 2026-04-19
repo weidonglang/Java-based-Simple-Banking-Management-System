@@ -3,6 +3,7 @@ package com.web.servlet;
 import com.web.entity.User;
 import com.web.service.UserService;
 import com.web.service.UserServiceImpl;
+import com.web.util.CsrfUtil;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -21,6 +22,7 @@ public class ToUpdateUserServlet extends HttpServlet {
             int id = Integer.parseInt(idStr);
             User user = userService.getById(id);
             request.setAttribute("user", user);
+            CsrfUtil.getOrCreateToken(request);
             request.getRequestDispatcher("/updateUser.jsp").forward(request, response);
         } catch (Exception e) {
             request.setAttribute("msg", "参数无效或用户不存在");

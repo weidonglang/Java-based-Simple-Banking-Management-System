@@ -9,7 +9,14 @@ import java.io.IOException;
 /**
  * 仅允许管理员访问 /showUsers 及相关管理接口
  */
-@WebFilter(urlPatterns = {"/showUsers", "/deleteUserById", "/toUpdateUser", "/updateUserById"})
+@WebFilter(urlPatterns = {
+        "/showUsers",
+        "/showUsersByPage",
+        "/searchUser",
+        "/deleteUserById",
+        "/toUpdateUser",
+        "/updateUserById"
+})
 public class AdminAuthFilter implements Filter {
     @Override
     public void init(FilterConfig filterConfig) throws ServletException { /* no-op */ }

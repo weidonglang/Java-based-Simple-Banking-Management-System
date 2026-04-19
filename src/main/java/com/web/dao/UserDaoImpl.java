@@ -13,27 +13,6 @@ import java.util.List;
  */
 public class UserDaoImpl implements UserDao {
     @Override
-    public User findByUsernameAndPassword(String username, String password) {
-        final String sql = "SELECT id, username, password FROM user WHERE username=? AND password=?";
-        try (Connection conn = JDBCUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, username);
-            ps.setString(2, password);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    User u = new User();
-                    u.setId(rs.getInt("id"));
-                    u.setUsername(rs.getString("username"));
-                    u.setPassword(rs.getString("password"));
-                    return u;
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-    @Override
     public User findByUsername(String username) {
         final String sql = "SELECT id, username, password FROM user WHERE username=?";
         try (Connection conn = JDBCUtil.getConnection();
@@ -108,12 +87,19 @@ public class UserDaoImpl implements UserDao {
     }
     @Override
     public int update(User user) {
-        final String sql = "UPDATE user SET username=?, password=? WHERE id=?";
+        final boolean updatePassword = user.getPassword() != null && !user.getPassword().isEmpty();
+        final String sql = updatePassword
+                ? "UPDATE user SET username=?, password=? WHERE id=?"
+                : "UPDATE user SET username=? WHERE id=?";
         try (Connection conn = JDBCUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, user.getUsername());
-            ps.setString(2, user.getPassword());
-            ps.setInt(3, user.getId());
+            if (updatePassword) {
+                ps.setString(2, user.getPassword());
+                ps.setInt(3, user.getId());
+            } else {
+                ps.setInt(2, user.getId());
+            }
             return ps.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();

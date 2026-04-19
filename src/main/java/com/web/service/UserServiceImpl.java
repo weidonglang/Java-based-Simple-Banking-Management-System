@@ -5,6 +5,7 @@ import com.web.dao.UserDaoImpl;
 import com.web.entity.Page;
 import com.web.entity.User;
 import com.web.util.JDBCUtil;
+import com.web.util.PasswordUtil;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -18,13 +19,22 @@ public class UserServiceImpl implements UserService {
     private final UserDao userDao = new UserDaoImpl();
     @Override
     public User login(String username, String password) {
-        return userDao.findByUsernameAndPassword(username, password);
+        User user = userDao.findByUsername(username);
+        if (user == null || !PasswordUtil.verify(password, user.getPassword())) {
+            return null;
+        }
+        if (PasswordUtil.needsRehash(user.getPassword())) {
+            User upgraded = new User(user.getId(), user.getUsername(), PasswordUtil.hash(password));
+            userDao.update(upgraded);
+        }
+        user.setPassword(null);
+        return user;
     }
     @Override
     public boolean register(String username, String password) {
         User u = new User();
         u.setUsername(username);
-        u.setPassword(password);
+        u.setPassword(PasswordUtil.hash(password));
         return userDao.addUser(u);
     }
     @Override
@@ -37,6 +47,9 @@ public class UserServiceImpl implements UserService {
     }
     @Override
     public boolean update(User user) {
+        if (user.getPassword() != null && !user.getPassword().isEmpty()) {
+            user.setPassword(PasswordUtil.hash(user.getPassword()));
+        }
         return userDao.update(user) > 0;
     }
     @Override

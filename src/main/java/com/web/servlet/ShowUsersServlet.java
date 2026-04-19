@@ -4,6 +4,7 @@ import com.web.entity.Page;
 import com.web.entity.User;
 import com.web.service.UserService;
 import com.web.service.UserServiceImpl;
+import com.web.util.CsrfUtil;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -28,6 +29,7 @@ public class ShowUsersServlet extends HttpServlet {
 
         Page<User> page = userService.findUsersByPage(1, PAGE_SIZE);
         req.setAttribute("page", page);
+        CsrfUtil.getOrCreateToken(req);
 
         // 如果有 msg 之类的提示，可以从参数带过来
         String msg = req.getParameter("msg");

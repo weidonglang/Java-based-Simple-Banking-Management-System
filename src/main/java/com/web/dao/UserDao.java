@@ -3,7 +3,6 @@ import com.web.entity.User;
 import java.util.List;
 public interface UserDao {
     // 登录
-    User findByUsernameAndPassword(String username, String password);
     // 查重 / 精确查
     User findByUsername(String username);
     // 新增用户
